@@ -1,0 +1,141 @@
+import * as THREE from "three";
+import { buildPizza } from "./PizzaModel";
+import { buildIngredientProp } from "./IngredientProps";
+import { setupLighting, setupEnvironment } from "./Lighting";
+import { setupComposer } from "./PostFX";
+import { SteamParticles } from "./SteamParticles";
+import { evaluateCamera } from "./CameraPath";
+import { ingredients } from "../content/data";
+
+const SPECIALTY_START = 0.5;
+const SPECIALTY_END = 0.82;
+
+function smoothstep(t: number): number {
+  const c = THREE.MathUtils.clamp(t, 0, 1);
+  return c * c * (3 - 2 * c);
+}
+
+export class SceneApp {
+  private renderer: THREE.WebGLRenderer;
+  private scene = new THREE.Scene();
+  private camera: THREE.PerspectiveCamera;
+  private pizza: THREE.Group;
+  private ingredientGroups: THREE.Group[] = [];
+  private steam: SteamParticles;
+  private composer;
+  private clock = new THREE.Clock();
+  private progress = 0;
+  private targetProgress = 0;
+  private mouse = new THREE.Vector2();
+  private raf = 0;
+
+  constructor(canvas: HTMLCanvasElement) {
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.05;
+
+    this.scene.background = null;
+    this.camera = new THREE.PerspectiveCamera(32, 1, 0.1, 50);
+
+    setupEnvironment(this.renderer, this.scene);
+    setupLighting(this.scene);
+
+    this.pizza = buildPizza();
+    this.scene.add(this.pizza);
+
+    this.steam = new SteamParticles();
+    this.steam.points.position.y = 0.5;
+    this.scene.add(this.steam.points);
+
+    ingredients.forEach((ing, i) => {
+      const g = buildIngredientProp(ing.id);
+      g.scale.setScalar(0.001);
+      g.userData.index = i;
+      this.scene.add(g);
+      this.ingredientGroups.push(g);
+    });
+
+    this.composer = setupComposer(this.renderer, this.scene, this.camera);
+
+    this.onResize();
+    window.addEventListener("resize", () => this.onResize());
+    window.addEventListener("pointermove", (e) => {
+      this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      this.mouse.y = (e.clientY / window.innerHeight) * 2 - 1;
+    });
+
+    this.loop();
+  }
+
+  private onResize(): void {
+    const canvas = this.renderer.domElement;
+    const parent = canvas.parentElement ?? document.body;
+    const w = parent.clientWidth || window.innerWidth;
+    const h = parent.clientHeight || window.innerHeight;
+    this.renderer.setSize(w, h, false);
+    this.composer.setSize(w, h);
+    this.camera.aspect = w / h;
+    this.camera.updateProjectionMatrix();
+  }
+
+  /** progress: 0..1, avance global a lo largo de todo el scroll de la página. */
+  setProgress(p: number): void {
+    this.targetProgress = THREE.MathUtils.clamp(p, 0, 1);
+  }
+
+  private updateIngredients(p: number, t: number): void {
+    const sp = smoothstep((p - SPECIALTY_START) / (SPECIALTY_END - SPECIALTY_START));
+    const count = this.ingredientGroups.length;
+    this.ingredientGroups.forEach((g, i) => {
+      const start = (i / count) * 0.55;
+      const end = start + 0.45;
+      const local = smoothstep((sp - start) / (end - start));
+      const angle = (i / count) * Math.PI * 2 + t * 0.08;
+      const radius = THREE.MathUtils.lerp(0.15, 2.35, local);
+      const depthPhase = i % 2 === 0 ? 1 : -1;
+      const height = THREE.MathUtils.lerp(0.3, 0.55 + depthPhase * 0.55, local) + Math.sin(t * 0.6 + i) * 0.06 * local;
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle) * radius * (0.9 + depthPhase * 0.15);
+      g.position.set(x, height, z);
+      g.rotation.y = angle + Math.PI / 2;
+      g.rotation.x = Math.sin(t * 0.4 + i) * 0.05 * local;
+      const scale = THREE.MathUtils.lerp(0.001, 0.62, local);
+      g.scale.setScalar(scale);
+    });
+  }
+
+  private loop = (): void => {
+    this.raf = requestAnimationFrame(this.loop);
+    const dt = Math.min(this.clock.getDelta(), 0.05);
+    const t = this.clock.elapsedTime;
+
+    this.progress += (this.targetProgress - this.progress) * Math.min(1, dt * 4);
+
+    this.pizza.rotation.y = t * 0.06 + this.progress * 1.4;
+    this.pizza.position.y = Math.sin(t * 0.35) * 0.02;
+
+    const cam = evaluateCamera(this.progress);
+    const parallaxX = this.mouse.x * 0.18;
+    const parallaxY = -this.mouse.y * 0.1;
+    this.camera.position.copy(cam.position);
+    this.camera.position.x += parallaxX;
+    this.camera.position.y += parallaxY;
+    this.camera.fov = cam.fov;
+    this.camera.updateProjectionMatrix();
+    this.camera.lookAt(cam.target);
+
+    const inSpecialty = this.progress > SPECIALTY_START - 0.05 && this.progress < SPECIALTY_END + 0.1;
+    this.updateIngredients(this.progress, t);
+
+    this.steam.update(dt, inSpecialty ? 0.3 : 1);
+
+    this.composer.composer.render();
+  };
+
+  dispose(): void {
+    cancelAnimationFrame(this.raf);
+  }
+}
