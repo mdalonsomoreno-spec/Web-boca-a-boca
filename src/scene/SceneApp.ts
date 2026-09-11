@@ -5,6 +5,7 @@ import { setupLighting, setupEnvironment } from "./Lighting";
 import { setupComposer } from "./PostFX";
 import { SteamParticles } from "./SteamParticles";
 import { evaluateCamera } from "./CameraPath";
+import { getQualityTier } from "./capabilities";
 import { ingredients } from "../content/data";
 
 const SPECIALTY_START = 0.5;
@@ -31,9 +32,17 @@ export class SceneApp {
   private raf = 0;
 
   constructor(canvas: HTMLCanvasElement) {
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.shadowMap.enabled = true;
+    const quality = getQualityTier();
+    const reduced = quality === "reduced";
+
+    this.renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: !reduced,
+      alpha: true,
+      powerPreference: reduced ? "default" : "high-performance",
+    });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, reduced ? 1.5 : 2));
+    this.renderer.shadowMap.enabled = !reduced;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
@@ -44,16 +53,17 @@ export class SceneApp {
     setupEnvironment(this.renderer, this.scene);
     setupLighting(this.scene);
 
-    loadPhotoPizza("/images/hero-pizza.png").then((pizza) => {
+    loadPhotoPizza("/images/hero-pizza.webp").then((pizza) => {
       pizza.group.scale.setScalar(0.001);
       this.scene.add(pizza.group);
       this.pizza = pizza;
       this.pizzaRevealStart = this.clock.elapsedTime;
     });
 
-    this.steam = new SteamParticles();
+    this.steam = new SteamParticles(reduced ? 14 : 34);
     this.steam.points.position.y = 0.5;
     this.scene.add(this.steam.points);
+    this.steam.points.visible = !reduced;
 
     ingredients.forEach((ing, i) => {
       const g = buildIngredientProp(ing.id);
@@ -63,7 +73,7 @@ export class SceneApp {
       this.ingredientGroups.push(g);
     });
 
-    this.composer = setupComposer(this.renderer, this.scene, this.camera);
+    this.composer = setupComposer(this.renderer, this.scene, this.camera, reduced);
 
     this.onResize();
     window.addEventListener("resize", () => this.onResize());
@@ -148,6 +158,17 @@ export class SceneApp {
 
     this.composer.composer.render();
   };
+
+  /** Detiene el bucle de render (al salir de la vista Inicio) sin destruir la escena. */
+  pause(): void {
+    cancelAnimationFrame(this.raf);
+  }
+
+  /** Reanuda el bucle de render (al volver a la vista Inicio). */
+  resume(): void {
+    this.clock.getDelta();
+    this.loop();
+  }
 
   dispose(): void {
     cancelAnimationFrame(this.raf);

@@ -18,87 +18,179 @@
 
     <div id="app">
       <header class="topbar">
-        <div class="brand">Boca<span>a</span>Boca</div>
+        <a class="brand" href="#/">Boca<span>a</span>Boca</a>
         <nav class="topnav">
-          <a class="nav-link" href="#historia">Historia</a>
-          <a class="nav-link" href="#especialidad">La especialidad</a>
-          <a class="nav-link" href="#visitanos">Visítanos</a>
-          <a class="nav-link" href="tel:+34918875043">918 875 043</a>
+          <a class="nav-link" data-nav-link="inicio" href="#/">Inicio</a>
+          <a class="nav-link" data-nav-link="carta" href="#/carta">Carta</a>
+          <a class="nav-link" href="#historia">Nosotros</a>
+          <a class="nav-link" data-nav-link="galeria" href="#/galeria">Galería</a>
+          <a class="nav-link" data-nav-link="contacto" href="#/contacto">Contacto</a>
           <a class="btn btn-primary btn-sm" href="https://www.pizzeriabocaaboca.es/es/pedir-pizza-daganzo-de-arriba" target="_blank" rel="noopener">Pedir ahora</a>
         </nav>
+        <button id="nav-toggle" class="nav-toggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-nav">
+          <span></span><span></span><span></span>
+        </button>
       </header>
 
-      <main>
-        <section class="scene-section hero" id="inicio">
-          <div class="hero-copy">
-            <p class="eyebrow reveal" data-reveal>Daganzo de Arriba · Madrid</p>
-            <h1 class="hero-title reveal" data-reveal>BOCA A BOCA</h1>
-            <p class="hero-tagline reveal" data-reveal>&ldquo;Más de 20 años haciendo que vuelvas.&rdquo;</p>
-            <div class="hero-actions reveal" data-reveal>
-              <a class="btn btn-primary" href="https://www.pizzeriabocaaboca.es/es/pedir-pizza-daganzo-de-arriba" target="_blank" rel="noopener">Pedir ahora</a>
-              <a class="btn btn-outline" href="https://www.pizzeriabocaaboca.es/es/productos" target="_blank" rel="noopener">Ver carta</a>
-            </div>
-          </div>
-          <div class="scroll-cue reveal" data-reveal>
-            <span>Desliza</span>
-            <i class="scroll-line"></i>
-          </div>
-        </section>
+      <nav id="mobile-nav" class="mobile-nav" hidden>
+        <a data-nav-link="inicio" href="#/">Inicio</a>
+        <a data-nav-link="carta" href="#/carta">Carta</a>
+        <a href="#historia">Nosotros</a>
+        <a data-nav-link="galeria" href="#/galeria">Galería</a>
+        <a data-nav-link="contacto" href="#/contacto">Contacto</a>
+        <div class="mobile-nav-actions">
+          <a class="btn btn-outline" href="tel:+34918875043">Llamar</a>
+          <a class="btn btn-primary" href="https://www.pizzeriabocaaboca.es/es/pedir-pizza-daganzo-de-arriba" target="_blank" rel="noopener">Pedir ahora</a>
+        </div>
+      </nav>
 
-        <section class="scene-section story" id="historia">
-          <div class="panel panel-left">
-            <div class="panel-text">
-              <p class="eyebrow" data-reveal>El sabor de Boca a Boca</p>
-              <h2 data-reveal>Más de 20 años de historia</h2>
-              <p data-reveal>
-                En el centro de Daganzo de Arriba, a las afueras de Madrid, Pizzería Boca a Boca lleva más
-                de veinte años elaborando pizza artesana con masa propia y un horno especializado, cocinando
-                cada pizza en su punto exacto.
-              </p>
-              <p data-reveal>
-                Un local pensado tanto para comer en sala como para pedir a domicilio, con una carta que
-                además de pizzas incluye hamburguesas, bocadillos camperos, ensaladas y pastas — siempre con
-                la misma idea: que el sabor hable por sí solo, boca a boca.
-              </p>
+      <!-- ================= INICIO ================= -->
+      <div id="view-inicio" class="view">
+        <main>
+          <section class="scene-section hero" id="inicio">
+            <picture class="hero-fallback-img">
+              <source srcset="/images/hero-pizza.webp" type="image/webp" />
+              <img src="/images/hero-pizza.png" alt="Pizza Boca a Boca" width="610" height="296" />
+            </picture>
+            <div class="hero-copy">
+              <p class="eyebrow reveal" data-reveal>Daganzo de Arriba · Madrid</p>
+              <h1 class="hero-title reveal" data-reveal>BOCA A BOCA</h1>
+              <p class="hero-tagline reveal" data-reveal>&ldquo;Más de 20 años haciendo que vuelvas.&rdquo;</p>
+              <div class="hero-actions reveal" data-reveal>
+                <a class="btn btn-primary" href="https://www.pizzeriabocaaboca.es/es/pedir-pizza-daganzo-de-arriba" target="_blank" rel="noopener">Pedir ahora</a>
+                <a class="btn btn-outline" href="#/carta">Ver carta</a>
+              </div>
             </div>
-            <div class="panel-media" data-reveal>
-              <img src="/images/story-slice.jpg" alt="Porción de pizza Boca a Boca recién horneada" loading="lazy" />
+            <div class="scroll-cue reveal" data-reveal>
+              <span>Desliza</span>
+              <i class="scroll-line"></i>
+            </div>
+          </section>
+
+          <section class="scene-section story" id="historia">
+            <div class="panel panel-left">
+              <div class="panel-text">
+                <p class="eyebrow" data-reveal>El sabor de Boca a Boca</p>
+                <h2 data-reveal>Más de 20 años de historia</h2>
+                <p data-reveal>
+                  En el centro de Daganzo de Arriba, a las afueras de Madrid, Pizzería Boca a Boca lleva más
+                  de veinte años elaborando pizza artesana con masa propia y un horno especializado, cocinando
+                  cada pizza en su punto exacto.
+                </p>
+                <p data-reveal>
+                  Un local pensado tanto para comer en sala como para pedir a domicilio, con una carta que
+                  además de pizzas incluye hamburguesas, bocadillos camperos, ensaladas y pastas — siempre con
+                  la misma idea: que el sabor hable por sí solo, boca a boca.
+                </p>
+              </div>
+              <div class="panel-media" data-reveal>
+                <picture>
+                  <source srcset="/images/story-slice.webp" type="image/webp" />
+                  <img src="/images/story-slice.jpg" alt="Porción de pizza Boca a Boca recién horneada" loading="lazy" width="612" height="408" />
+                </picture>
+              </div>
+            </div>
+          </section>
+
+          <section class="scene-section specialty" id="especialidad">
+            <div class="panel panel-right">
+              <div class="panel-media" data-reveal>
+                <picture>
+                  <source srcset="/images/specialty-cheesepull.webp" type="image/webp" />
+                  <img src="/images/specialty-cheesepull.jpg" alt="Queso fundido de la Pizza Boca a Boca" loading="lazy" width="612" height="459" />
+                </picture>
+              </div>
+              <div class="panel-text">
+                <p class="eyebrow" data-reveal>La especialidad de la casa</p>
+                <h2 data-reveal>Pizza Boca a Boca</h2>
+                <p data-reveal>
+                  Llena de sabor y explosividad para los más atrevidos: la combinación que da nombre a la casa.
+                </p>
+                <ul class="ingredient-list" data-reveal>
+                  <li>Pimiento</li>
+                  <li>Bacon</li>
+                  <li>Queso</li>
+                  <li>Carne</li>
+                  <li>Guindilla</li>
+                  <li>Cebolla</li>
+                </ul>
+                <a class="btn btn-outline reveal-inline" data-reveal href="#/carta?cat=pizzas">Ver en la carta</a>
+              </div>
+            </div>
+          </section>
+
+          <section class="scene-section closing" id="cierre">
+            <div class="closing-inner" data-reveal>
+              <p class="eyebrow">¿Con hambre?</p>
+              <h2>Pide ahora o ven a vernos</h2>
+              <div class="hero-actions">
+                <a class="btn btn-primary" href="https://www.pizzeriabocaaboca.es/es/pedir-pizza-daganzo-de-arriba" target="_blank" rel="noopener">Pedir ahora</a>
+                <a class="btn btn-outline" href="#/contacto">Cómo llegar</a>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <!-- ================= CARTA ================= -->
+      <div id="view-carta" class="view page" hidden>
+        <div class="page-header">
+          <p class="eyebrow">La carta</p>
+          <h1>Todo lo que hacemos</h1>
+          <p class="page-lead">
+            Pizza artesana, camperos, hamburguesas caseras, pasta y mucho más. Los precios se actualizan en
+            nuestra carta oficial — cada producto enlaza directamente a ella.
+          </p>
+        </div>
+
+        <nav class="category-pills" id="category-pills" aria-label="Categorías de la carta"></nav>
+
+        <div class="menu-panel" id="menu-panel"></div>
+
+        <div class="product-modal" id="product-modal" aria-hidden="true">
+          <div class="product-modal-card">
+            <button class="product-modal-close" id="product-modal-close" aria-label="Cerrar">&times;</button>
+            <div class="product-modal-media" id="product-modal-media"></div>
+            <div class="product-modal-body">
+              <p class="eyebrow" id="product-modal-eyebrow"></p>
+              <h3 id="product-modal-name"></h3>
+              <p id="product-modal-desc"></p>
+              <ul class="ingredient-list" id="product-modal-ingredients" hidden></ul>
+              <a class="btn btn-primary" id="product-modal-cta" href="https://www.pizzeriabocaaboca.es/es/pedir-pizza-daganzo-de-arriba" target="_blank" rel="noopener">Ver precio y pedir</a>
             </div>
           </div>
-        </section>
+        </div>
+      </div>
 
-        <section class="scene-section specialty" id="especialidad">
-          <div class="panel panel-right">
-            <div class="panel-media" data-reveal>
-              <img src="/images/specialty-cheesepull.jpg" alt="Queso fundido de la Pizza Boca a Boca" loading="lazy" />
-            </div>
-            <div class="panel-text">
-              <p class="eyebrow" data-reveal>La especialidad de la casa</p>
-              <h2 data-reveal>Pizza Boca a Boca</h2>
-              <p data-reveal>
-                Llena de sabor y explosividad para los más atrevidos: la combinación que da nombre a la casa.
-              </p>
-              <ul class="ingredient-list" data-reveal>
-                <li>Pimiento</li>
-                <li>Bacon</li>
-                <li>Queso</li>
-                <li>Carne</li>
-                <li>Guindilla</li>
-                <li>Cebolla</li>
-              </ul>
-            </div>
-          </div>
-        </section>
+      <!-- ================= GALERÍA ================= -->
+      <div id="view-galeria" class="view page page-flush" hidden>
+        <div class="gallery-fullscreen" id="gallery-fullscreen"></div>
+      </div>
 
-        <section class="scene-section info" id="visitanos">
-          <div class="info-grid">
-            <div data-reveal>
-              <p class="eyebrow">Visítanos</p>
-              <h2>Daganzo de Arriba</h2>
-              <p class="info-line">Carretera de Alcalá, 7<br />28814 Daganzo de Arriba, Madrid</p>
-              <p class="info-line"><a href="tel:+34918875043">918 875 043</a></p>
-            </div>
-            <div class="hours" data-reveal>
+      <!-- ================= CONTACTO ================= -->
+      <div id="view-contacto" class="view page" hidden>
+        <div class="page-header">
+          <p class="eyebrow">Boca a Boca</p>
+          <h1>Daganzo de Arriba</h1>
+        </div>
+
+        <div class="contact-grid">
+          <div class="contact-details" data-reveal-static>
+            <p class="info-line">Carretera Alcalá, 7<br />28814 Daganzo de Arriba, Madrid</p>
+            <p class="info-line"><a href="tel:+34918875043">91 887 50 43</a></p>
+            <p class="info-line"><a href="tel:+34672221626">672 22 16 26</a></p>
+            <p class="info-line">
+              <a href="https://www.instagram.com/pizzeria_boca_a_boca/" target="_blank" rel="noopener" class="instagram-link">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="5" />
+                  <circle cx="12" cy="12" r="4" />
+                  <circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none" />
+                </svg>
+                @pizzeria_boca_a_boca
+              </a>
+            </p>
+
+            <div class="hours">
               <h3>Horario</h3>
               <ul>
                 <li><span>Lunes a Viernes</span><span>09:00 – 23:00</span></li>
@@ -106,13 +198,24 @@
                 <li><span>Domingos</span><span>09:00 – 23:00</span></li>
               </ul>
             </div>
-            <div class="cta-final" data-reveal>
-              <a class="btn btn-primary" href="https://www.pizzeriabocaaboca.es/es/pedir-pizza-daganzo-de-arriba" target="_blank" rel="noopener">Pedir ahora</a>
-              <a class="btn btn-outline" href="https://www.pizzeriabocaaboca.es/es/productos" target="_blank" rel="noopener">Ver carta completa</a>
+
+            <div class="cta-final">
+              <a class="btn btn-primary" href="tel:+34918875043">Llamar</a>
+              <a class="btn btn-outline" href="https://www.google.com/maps/dir/?api=1&destination=Pizzer%C3%ADa%20Boca%20a%20Boca%2C%20Carretera%20de%20Alcal%C3%A1%207%2C%20Daganzo%20de%20Arriba" target="_blank" rel="noopener">Cómo llegar</a>
+              <a class="btn btn-outline" href="https://www.pizzeriabocaaboca.es/es/pedir-pizza-daganzo-de-arriba" target="_blank" rel="noopener">Pedir ahora</a>
             </div>
           </div>
-        </section>
-      </main>
+
+          <div class="contact-map" data-reveal-static>
+            <iframe
+              title="Mapa — Pizzería Boca a Boca, Daganzo de Arriba"
+              src="https://www.google.com/maps?q=Pizzer%C3%ADa%20Boca%20a%20Boca%2C%20Carretera%20de%20Alcal%C3%A1%207%2C%20Daganzo%20de%20Arriba&output=embed"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+        </div>
+      </div>
 
       <footer class="site-footer">
         <span>© <span id="year"></span> Pizzería Boca a Boca — Daganzo de Arriba</span>

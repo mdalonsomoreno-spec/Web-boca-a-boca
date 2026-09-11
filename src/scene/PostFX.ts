@@ -8,17 +8,20 @@ export function setupComposer(
   renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,
   camera: THREE.PerspectiveCamera,
-): { composer: EffectComposer; bloom: UnrealBloomPass; setSize: (w: number, h: number) => void } {
+  reduced = false,
+): { composer: EffectComposer; bloom: UnrealBloomPass | null; setSize: (w: number, h: number) => void } {
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
 
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.28, 0.6, 0.86);
-  composer.addPass(bloom);
+  // En gama baja, el bloom (varios render targets extra + downsampling)
+  // es de los costes más altos: se omite por completo en vez de "aliviarlo".
+  const bloom = reduced ? null : new UnrealBloomPass(new THREE.Vector2(1, 1), 0.28, 0.6, 0.86);
+  if (bloom) composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
   const setSize = (w: number, h: number) => {
     composer.setSize(w, h);
-    bloom.resolution.set(w, h);
+    bloom?.resolution.set(w, h);
   };
 
   return { composer, bloom, setSize };
