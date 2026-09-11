@@ -64,23 +64,36 @@ export function makeCrustTextures(size = 1024) {
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, size, size);
 
-  // Manchas de horno (leopard spots), más densas en los bordes.
-  for (let i = 0; i < 260; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const r = Math.pow(Math.random(), 0.5) * size * 0.5;
-    const x = size / 2 + Math.cos(a) * r;
-    const y = size / 2 + Math.sin(a) * r;
-    const edgeBias = 0.35 + (r / (size * 0.5)) * 0.65;
-    if (Math.random() > edgeBias) continue;
-    const rad = 3 + Math.random() * 14;
-    const dark = 40 + Math.random() * 60;
-    ctx.beginPath();
-    ctx.fillStyle = `rgba(${dark + 30},${dark},${dark - 20},${0.35 + Math.random() * 0.4})`;
-    ctx.filter = "blur(1.5px)";
-    ctx.arc(x, y, rad, 0, Math.PI * 2);
-    ctx.fill();
+  // Charring por niveles de ruido fbm (level-set): las siluetas orgánicas
+  // salen del propio campo de ruido, no de círculos estampados, así que no
+  // hay dos manchas iguales ni bordes geométricos.
+  const cx = size / 2;
+  const cy = size / 2;
+  const maxR = size * 0.5;
+  const charImg = ctx.getImageData(0, 0, size, size);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const dx = (x - cx) / maxR;
+      const dy = (y - cy) / maxR;
+      const rn = Math.sqrt(dx * dx + dy * dy);
+      const edgeBias = THREE.MathUtils.clamp(0.15 + rn * 0.95, 0, 1);
+
+      const charField = fbm2(x * 0.018, y * 0.018, 4) * 0.6 + fbm2(x * 0.05 + 30, y * 0.05 + 30, 3) * 0.4;
+      const charMask = Math.max(0, charField * edgeBias - 0.12) * 1.6;
+
+      const speckle = Math.max(0, fbm2(x * 0.12 + 80, y * 0.12 + 80, 2)) * edgeBias * 0.5;
+      const dark = Math.min(1, charMask + speckle * 0.6);
+
+      if (dark > 0.01) {
+        const i = (y * size + x) * 4;
+        const toBrown = [66, 38, 18];
+        charImg.data[i] = charImg.data[i] * (1 - dark) + toBrown[0] * dark;
+        charImg.data[i + 1] = charImg.data[i + 1] * (1 - dark) + toBrown[1] * dark;
+        charImg.data[i + 2] = charImg.data[i + 2] * (1 - dark) + toBrown[2] * dark;
+      }
+    }
   }
-  ctx.filter = "none";
+  ctx.putImageData(charImg, 0, 0);
 
   // Polvo de harina.
   for (let i = 0; i < 1800; i++) {
@@ -116,6 +129,10 @@ export function makeCheeseTextures(size = 1024) {
   ctx.fillStyle = "#e0b24a";
   ctx.fillRect(0, 0, size, size);
 
+  // Todo el relieve del queso (tono base, zonas tostadas y toques de
+  // tomate asomando) sale de campos de ruido evaluados por píxel: las
+  // siluetas son las curvas de nivel del propio ruido, nunca círculos
+  // estampados, así que no hay dos zonas iguales ni bordes geométricos.
   const img = ctx.getImageData(0, 0, size, size);
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
@@ -123,9 +140,32 @@ export function makeCheeseTextures(size = 1024) {
       const n2 = fbm2(x * 0.02 + 50, y * 0.02 + 50, 3);
       const i = (y * size + x) * 4;
       const base = 0.55 + n * 0.35 + n2 * 0.08;
-      const r = 214 + base * 40 - 10;
-      const g = 168 + base * 45 - 20;
-      const b = 92 + base * 30 - 20;
+      let r = 214 + base * 40 - 10;
+      let g = 168 + base * 45 - 20;
+      let b = 92 + base * 30 - 20;
+
+      const toastField = fbm2(x * 0.014 + 200, y * 0.014 + 200, 4) * 0.65 + fbm2(x * 0.04 + 5, y * 0.04 + 5, 3) * 0.35;
+      const toastMask = Math.max(0, toastField - 0.18) * 1.5;
+      if (toastMask > 0.01) {
+        // La elección tostado-claro / tostado-oscuro también sigue un campo de
+        // ruido coherente (no Math.random() por píxel, que daría grano de estática).
+        const dark = fbm2(x * 0.02 + 900, y * 0.02 + 900, 2) > -0.05;
+        const toastColor: [number, number, number] = dark ? [110, 60, 18] : [255, 226, 165];
+        const w = Math.min(1, toastMask) * (dark ? 0.85 : 0.55);
+        r = r * (1 - w) + toastColor[0] * w;
+        g = g * (1 - w) + toastColor[1] * w;
+        b = b * (1 - w) + toastColor[2] * w;
+      }
+
+      const sauceField = fbm2(x * 0.03 + 500, y * 0.03 + 500, 4);
+      const sauceMask = Math.max(0, sauceField - 0.5) * 2.2;
+      if (sauceMask > 0.01) {
+        const w = Math.min(1, sauceMask) * 0.75;
+        r = r * (1 - w) + 178 * w;
+        g = g * (1 - w) + 42 * w;
+        b = b * (1 - w) + 30 * w;
+      }
+
       img.data[i] = Math.max(0, Math.min(255, r));
       img.data[i + 1] = Math.max(0, Math.min(255, g));
       img.data[i + 2] = Math.max(0, Math.min(255, b));
@@ -133,35 +173,6 @@ export function makeCheeseTextures(size = 1024) {
     }
   }
   ctx.putImageData(img, 0, 0);
-
-  // Zonas tostadas (burbujas doradas/oscuras).
-  for (let i = 0; i < 140; i++) {
-    const x = Math.random() * size;
-    const y = Math.random() * size;
-    const rad = 6 + Math.random() * 26;
-    const g = ctx.createRadialGradient(x, y, 0, x, y, rad);
-    const toasted = Math.random() > 0.35;
-    g.addColorStop(0, toasted ? "rgba(120,66,20,0.55)" : "rgba(255,231,170,0.4)");
-    g.addColorStop(1, "rgba(120,66,20,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(x, y, rad, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Toques de salsa de tomate asomando entre el queso.
-  for (let i = 0; i < 26; i++) {
-    const x = Math.random() * size;
-    const y = Math.random() * size;
-    const rad = 4 + Math.random() * 10;
-    const g = ctx.createRadialGradient(x, y, 0, x, y, rad);
-    g.addColorStop(0, "rgba(178,42,30,0.85)");
-    g.addColorStop(1, "rgba(178,42,30,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(x, y, rad, 0, Math.PI * 2);
-    ctx.fill();
-  }
 
   // Oregano / especias.
   for (let i = 0; i < 500; i++) {
