@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { buildPizza } from "./PizzaModel";
+import { loadPhotoPizza, type PhotoPizza } from "./PhotoPizza";
 import { buildIngredientProp } from "./IngredientProps";
 import { setupLighting, setupEnvironment } from "./Lighting";
 import { setupComposer } from "./PostFX";
@@ -19,7 +19,8 @@ export class SceneApp {
   private renderer: THREE.WebGLRenderer;
   private scene = new THREE.Scene();
   private camera: THREE.PerspectiveCamera;
-  private pizza: THREE.Group;
+  private pizza: PhotoPizza | null = null;
+  private pizzaRevealStart: number | null = null;
   private ingredientGroups: THREE.Group[] = [];
   private steam: SteamParticles;
   private composer;
@@ -43,8 +44,12 @@ export class SceneApp {
     setupEnvironment(this.renderer, this.scene);
     setupLighting(this.scene);
 
-    this.pizza = buildPizza();
-    this.scene.add(this.pizza);
+    loadPhotoPizza("/images/hero-pizza.png").then((pizza) => {
+      pizza.group.scale.setScalar(0.001);
+      this.scene.add(pizza.group);
+      this.pizza = pizza;
+      this.pizzaRevealStart = this.clock.elapsedTime;
+    });
 
     this.steam = new SteamParticles();
     this.steam.points.position.y = 0.5;
@@ -86,6 +91,16 @@ export class SceneApp {
     this.targetProgress = THREE.MathUtils.clamp(p, 0, 1);
   }
 
+  private updatePizza(t: number): void {
+    if (!this.pizza || this.pizzaRevealStart === null) return;
+    const reveal = smoothstep((t - this.pizzaRevealStart) / 0.9);
+    this.pizza.group.scale.setScalar(THREE.MathUtils.lerp(0.001, 1, reveal));
+    this.pizza.group.position.y = Math.sin(t * 0.35) * 0.03;
+    // Ligero balanceo en el propio plano del sprite: da vida sin romper
+    // el efecto billboard (siempre mirando a cámara).
+    this.pizza.sprite.material.rotation = Math.sin(t * 0.22) * 0.025;
+  }
+
   private updateIngredients(p: number, t: number): void {
     const sp = smoothstep((p - SPECIALTY_START) / (SPECIALTY_END - SPECIALTY_START));
     const count = this.ingredientGroups.length;
@@ -114,8 +129,7 @@ export class SceneApp {
 
     this.progress += (this.targetProgress - this.progress) * Math.min(1, dt * 4);
 
-    this.pizza.rotation.y = t * 0.06 + this.progress * 1.4;
-    this.pizza.position.y = Math.sin(t * 0.35) * 0.02;
+    this.updatePizza(t);
 
     const cam = evaluateCamera(this.progress);
     const parallaxX = this.mouse.x * 0.18;
